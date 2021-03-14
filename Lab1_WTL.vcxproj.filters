@@ -30,6 +30,15 @@
     <ClInclude Include="resource1.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="resource2.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="MyDialogBar.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="AboutDlg.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Lab1_WTL.cpp">
@@ -43,15 +52,15 @@
     <ResourceCompile Include="ToolBar.rc">
       <Filter>Файлы ресурсов</Filter>
     </ResourceCompile>
+    <ResourceCompile Include="MyDialog.rc">
+      <Filter>Файлы ресурсов</Filter>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico">
       <Filter>Файлы ресурсов</Filter>
     </Image>
     <Image Include="Lab1_WTL.ico">
-      <Filter>Файлы ресурсов</Filter>
-    </Image>
-    <Image Include="toolbar1.bmp">
       <Filter>Файлы ресурсов</Filter>
     </Image>
   </ItemGroup>

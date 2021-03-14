@@ -4,14 +4,15 @@
 #include <atlbase.h>
 #include <atlapp.h>
 extern CAppModule _Module;
-#include <atlwin.h>
 #include <atlgdi.h>
 #include <atlmisc.h>
 #include <atlctrls.h>
 #include <atlctrlw.h>
 #include <atlctrlx.h>
 #include <atldlgs.h>
-#include "Resource.h"
+
+#include "MyDialogBar.h"
+#include "AboutDlg.h"
 CAppModule _Module;
 
 
@@ -35,7 +36,8 @@ public:
             OnSearch(uMsg, wParam, lParam, bHandled);
             return 0;
         case ID_About:
-            dialog.DoModal();
+            CAboutDlg AboutDialog;
+            AboutDialog.DoModal();
             return 0;
         }
         return 0;
@@ -61,17 +63,12 @@ public:
     }
     LRESULT OnSearch(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
     {
-        CFileDialog file(TRUE,NULL, TEXT("Выберите файл"), NULL, TEXT("File png (*.png)|*.png|\0\0Text Files (*.txt)|*.txt|"),this->m_hWnd);	//объект класса выбора файла
-        int result = file.DoModal();	//запустить диалоговое окно
-        if (result == IDOK)	//если файл выбран
-        {
-                
-        }
+        MyDialogBar SearchBar;
+        SearchBar.DoModal();
         return 0;
     }
 private:
     CMenu myMenu;
-    CSimpleDialog<IDD_ABOUTBOX> dialog;
 };
 
 
