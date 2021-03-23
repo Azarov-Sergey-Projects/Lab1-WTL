@@ -3,7 +3,9 @@
 #include <atlstr.h>
 #include <atlfile.h>
 #include <vector>
+#include <thread>
 
+#include "resource.h"
 #include "resource2.h"
 
 class MyDialogBar:public CDialogImpl<MyDialogBar>
@@ -20,14 +22,14 @@ public:
 
 	LRESULT OnCommand(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 	{
+		CString parameter = TEXT("C:\\Users\\Огурчик\\Desktop");
 		switch (wParam)
 		{
 		case IDC_BUTTON_EXIT:
-			EndDialog(NULL);
+			OnCloseCmd(uMsg,wParam,lParam,bHandled);
 			return 0;
 		case IDC_BUTTON_APPLY:
-			Find(TEXT("D:"));
-			//DrawFileView();
+			FindThread = std::thread((&MyDialogBar::Find),this,parameter);
 			return 0;
 		case IDC_SEARCH_TEXT_BAR :
 			GetDlgItemText(IDC_SEARCH_TEXT_BAR, FileName);
@@ -46,16 +48,19 @@ public:
 		CenterWindow(GetParent());
 		myListView.Create(m_hWnd,myRect , NULL,
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
-			LVS_REPORT | LVS_AUTOARRANGE | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS,
-			WS_EX_CLIENTEDGE);
+			LVS_REPORT | LVS_AUTOARRANGE | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS);
 		myListView.InsertColumn(0, TEXT("Название"), LVCFMT_LEFT, 250);
-		myListView.InsertColumn(1, TEXT("Расширение"), LVCFMT_LEFT,150);
-		myListView.InsertColumn(2, TEXT("Полный путь"), LVCFMT_LEFT,190);
+		myListView.InsertColumn(1, TEXT(".*"), LVCFMT_LEFT,50);
+		myListView.InsertColumn(2, TEXT("Полный путь"), LVCFMT_LEFT,290);
 		return 0;
 	}
 
 	LRESULT OnCloseCmd(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
+		if (FindThread.joinable())
+		{
+			FindThread.detach();
+		}
 		EndDialog(NULL);
 		return 0;
 	}
@@ -63,37 +68,31 @@ public:
 	void Find(CString szPath)
 	{
 		CFindFile F;
-		CString S = szPath + "\\*.*";
-		BOOL    bFlag = F.FindFile(S);
+		CString S = szPath+ TEXT("\\*.*");
+		
+		BOOL  bFlag = F.FindFile(S);
 		while (bFlag)
 		{
 			bFlag = F.FindNextFile();
-			if (F.IsDirectory() == TRUE && F.IsDots() == FALSE)
+			if (F.IsDirectory() == TRUE&&F.IsDots()==FALSE)
 			{
-				/*ArrayFileNames.push_back(F.GetFileName());
-				ArrayFilePath.push_back(F.GetFilePath());*/
-				myListView.InsertItem(0, F.GetFilePath());
+				myListView.InsertItem(0, F.GetFileName());
+				myListView.SetItemText(0, 2,F.GetFilePath());
 				Find(F.GetFilePath());
 			}
 		}
 		F.Close();
 	}
-
-	/*void DrawFileView()
+	HICON GetPathIcon(LPCWSTR sPath)
 	{
-		for (int i = 0; i < ArrayFileNames.size(); i++)
-		{
-			myListView.InsertItem(0, ArrayFileNames[i]);
-			//myListView.InsertItem(3, ArrayFilePath[i]);
-		}
-	}*/
-
-
+		SHFILEINFO FileInfo;
+		SHGetFileInfo(sPath,GetFileAttributes(sPath),
+			&FileInfo, sizeof(FileInfo),SHGFI_SYSICONINDEX | SHGFI_ICON);
+		return FileInfo.hIcon;
+	}
 private:
 	CString FileName;
 	CString FileExtention;
-	LVCOLUMNW Columns;
 	CListViewCtrl myListView;
-	std::vector<CString> ArrayFileNames;
-	std::vector<CString> ArrayFilePath;
+	std::thread FindThread;
 };
