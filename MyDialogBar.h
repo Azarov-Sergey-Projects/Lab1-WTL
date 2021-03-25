@@ -23,14 +23,22 @@ public:
 
 	LRESULT OnCommand(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 	{
-		CString parameter = TEXT("D:\\Labs_NIX\\");
+		CString parameter = TEXT("C:\\Users\\Огурчик\\Desktop\\");
 		switch (wParam)
 		{
 		case IDC_BUTTON_EXIT:
 			OnCloseCmd(uMsg,wParam,lParam,bHandled);
 			return 0;
 		case IDC_BUTTON_APPLY:
-			FindThread = std::thread((&MyDialogBar::FindFile),this,parameter);
+			if (FindThread.joinable())
+			{
+				FindThread.detach();
+				FindThread = std::thread((&MyDialogBar::FindFile), this, parameter);
+			}
+			else
+			{
+				FindThread = std::thread((&MyDialogBar::FindFile), this, parameter);
+			}
 			return 0;
 		case IDC_SEARCH_TEXT_BAR :
 			GetDlgItemText(IDC_SEARCH_TEXT_BAR, FileName);
@@ -87,9 +95,8 @@ public:
 	void FindFile(CString szPath)
 	{
 		CFindFile F;
-		CString S = szPath + TEXT("\\*.*");
+		CString S = szPath+ TEXT("*.*");
 		i = 0;
-		WIN32_FIND_DATAW FindFileData;
 		BOOL bFlag = F.FindFile(S);
 		if (!bFlag)
 		{
@@ -106,37 +113,28 @@ public:
 			InitListViewImage(i, S);
 		}
 	}
-	HICON GetPathIcon(LPCWSTR sPath)
-	{
-		SHFILEINFO FileInfo;
-		SHGetFileInfo(sPath,GetFileAttributes(sPath),
-			&FileInfo, sizeof(FileInfo),SHGFI_SYSICONINDEX | SHGFI_ICON);
-		return FileInfo.hIcon;
-	}
-
 	void View_List(CString buf, int i)
 	{
-		LVITEM lvitem;
-		lvitem.mask = LVIF_IMAGE | LVFIF_TEXT;
-		lvitem.state = 0;
-		lvitem.stateMask = 0;
-		lvitem.iItem = i;
-		lvitem.iSubItem = 0;
-		lvitem.pszText =(LPWSTR)(buf.GetString());
-		lvitem.cchTextMax = buf.GetLength();
-		myListView.InsertItem(&lvitem);
+		LVITEM lvItem;
+		lvItem.mask = LVIF_IMAGE | LVIF_TEXT;
+		lvItem.state = 0;
+		lvItem.stateMask = 0;
+		lvItem.iItem = i;
+		lvItem.iImage = i+2;
+		lvItem.iSubItem = 0;
+		lvItem.pszText = (LPWSTR)buf.GetString();
+		lvItem.cchTextMax = wcslen(buf);
+		myListView.InsertItem(&lvItem);
 	}
 
 	BOOL InitListViewImage(int size, CString path)
 	{
+		CFindFile F;
 		HIMAGELIST hSmall;
-		SHFILEINFO lp{};
+		SHFILEINFO lp;
 		hSmall = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_MASK | ILC_COLOR32, size, 1);
-		WIN32_FIND_DATAW FindFileData;
-		HANDLE hFind;
-		CString S = path;
-		hFind = FindFirstFileW(S, &FindFileData);
-		if (hFind==INVALID_HANDLE_VALUE)
+		bool hFind = F.FindFile(path);
+		if (!hFind)
 		{
 			MessageBox(TEXT("Error"), TEXT("File not found"), MB_OK | MB_ICONWARNING);
 		}
@@ -144,35 +142,29 @@ public:
 		{
 			do
 			{
-				if (wcscmp(FindFileData.cFileName, TEXT(".")))
+				if (wcscmp(F.GetFileName(), TEXT("."))==0)
 				{
-					wchar_t buf1[MAX_PATH] = L"D:\\Labs_NIX\\";
-					//wcscat((wchar_t*)S.GetString(), FindFileData.cFileName);
-					wcscat(buf1, FindFileData.cFileName);
 					SHGetFileInfo(TEXT(""), FILE_ATTRIBUTE_DEVICE, &lp, sizeof(&lp), SHGFI_ICONLOCATION | SHGFI_ICON | SHGFI_SMALLICON);
 					ImageList_AddIcon(hSmall, lp.hIcon);
 					DestroyIcon(lp.hIcon);
 				}
-				if (wcscmp(FindFileData.cFileName, TEXT("..")) == 0)
+				if (wcscmp(F.GetFileName(),TEXT("..")) == 0)
 				{
-					wchar_t buf1[MAX_PATH] = L"D:\\Labs_NIX\\";
-					wcscat(buf1, FindFileData.cFileName);
-					//wcscat((wchar_t*)S.GetString(), FindFileData.cFileName);
-					SHGetFileInfo(L"", FILE_ATTRIBUTE_DIRECTORY, &lp, sizeof(lp), SHGFI_ICONLOCATION | SHGFI_ICON | SHGFI_SMALLICON);
-
+					SHGetFileInfo(TEXT(""), FILE_ATTRIBUTE_DIRECTORY, &lp, sizeof(lp), SHGFI_ICONLOCATION | SHGFI_ICON | SHGFI_SMALLICON);
 					ImageList_AddIcon(hSmall, lp.hIcon);
 					DestroyIcon(lp.hIcon);
 				}
-				wchar_t buf1[MAX_PATH] = L"D:\\Labs_NIX\\";
-				wcscat(buf1, FindFileData.cFileName);
-				//wcscat((wchar_t*)S.GetString(), FindFileData.cFileName);
-				DWORD num = GetFileAttributes(buf1);
-				SHGetFileInfo(S.GetString(), num, &lp, sizeof(lp), SHGFI_ICONLOCATION | SHGFI_ICON | SHGFI_SMALLICON);
+				path.Delete(path.GetLength() - 3, 3);
+				CString FileInfo = path+ F.GetFileName();
+				wchar_t buf1[MAX_PATH] = L"C:\\Users\\Огурчик\\Desktop\\";
+				wcscat(buf1, F.GetFileName());
 
+				DWORD num = GetFileAttributes(buf1);
+				SHGetFileInfoW(buf1, num, &lp, sizeof(lp), SHGFI_SYSICONINDEX | SHGFI_ICON | SHGFI_USEFILEATTRIBUTES);
 				ImageList_AddIcon(hSmall, lp.hIcon);
 				DestroyIcon(lp.hIcon);
-			} while (FindNextFile(hFind, &FindFileData) != 0);
-			FindClose(hFind);
+			} while (F.FindNextFileW());
+			F.Close();
 		}
 		myListView.SetImageList(hSmall, LVSIL_SMALL);
 		return TRUE;
