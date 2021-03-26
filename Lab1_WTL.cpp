@@ -79,7 +79,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)
     _Module.Init(0, hInstance, 0);
 
     CMainWindow wnd;
-    wnd.Create(NULL, CWindow::rcDefault, TEXT("Hello, Wtl!"));
+    wnd.Create(NULL, CWindow::rcDefault, TEXT("Поисковик"));
     wnd.ShowWindow(SW_SHOW);
     CMessageLoop loop;
     int res = loop.Run();

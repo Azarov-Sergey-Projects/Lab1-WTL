@@ -1,13 +1,11 @@
 #pragma once
-#include <atlwin.h>
-#include <atlstr.h>
-#include <atlfile.h>
+
 #include <vector>
 #include <thread>
 
 #include "resource.h"
 #include "resource2.h"
-
+#include "MyListView.h"
 
 class MyDialogBar:public CDialogImpl<MyDialogBar>
 {
@@ -30,14 +28,15 @@ public:
 			OnCloseCmd(uMsg,wParam,lParam,bHandled);
 			return 0;
 		case IDC_BUTTON_APPLY:
+			ListView_DeleteAllItems(myListView.m_hWnd);
 			if (FindThread.joinable())
 			{
 				FindThread.detach();
-				FindThread = std::thread((&MyDialogBar::FindFile), this, parameter);
+				FindThread = std::thread((&MyListView::FindFile),this->myListView, parameter);
 			}
 			else
 			{
-				FindThread = std::thread((&MyDialogBar::FindFile), this, parameter);
+				FindThread = std::thread((&MyListView::FindFile), this->myListView, parameter);
 			}
 			return 0;
 		case IDC_SEARCH_TEXT_BAR :
@@ -53,14 +52,7 @@ public:
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
-		CRect myRect{0,0,600,400 };
-		CenterWindow(GetParent());
-		myListView.Create(m_hWnd,myRect , NULL,
-			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
-			LVS_REPORT | LVS_AUTOARRANGE | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS);
-		myListView.InsertColumn(0, TEXT("Название"), LVCFMT_LEFT, 600);
-		myListView.InsertColumn(1, TEXT(".*"), LVCFMT_LEFT,50);
-		myListView.InsertColumn(2, TEXT("Полный путь"), LVCFMT_LEFT,290);
+		myListView.Create(m_hWnd);
 		return 0;
 	}
 
@@ -92,10 +84,10 @@ public:
 		}
 		F.Close();
 	}*/
-	void FindFile(CString szPath)
+	/*void FindFile(CString szPath)
 	{
 		CFindFile F;
-		CString S = szPath+ TEXT("*.*");
+		CString S = szPath+TEXT("\\*.*");
 		i = 0;
 		BOOL bFlag = F.FindFile(S);
 		if (!bFlag)
@@ -106,8 +98,18 @@ public:
 		{
 			do
 			{
-				View_List(F.GetFileName(), i);
-				i++;
+				if (F.IsDirectory() == TRUE && F.IsDots() == FALSE)
+				{
+					View_List(F.GetFileName(), i);
+					i++;
+					FindFile(F.GetFilePath());
+				}
+				else
+				{
+					View_List(F.GetFileName(), i);
+					i++;
+				}
+			
 			} while (F.FindNextFileW());
 			F.Close();
 			InitListViewImage(i, S);
@@ -168,11 +170,12 @@ public:
 		}
 		myListView.SetImageList(hSmall, LVSIL_SMALL);
 		return TRUE;
-	}
+	}*/
 private:
 	CString FileName;
 	CString FileExtention;
-	CListViewCtrl myListView;
+	MyListView myListView;
+	//CListViewCtrl myListView;
 	std::thread FindThread;
 	int i;
 };
