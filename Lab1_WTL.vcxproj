@@ -154,6 +154,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Lab1_WTL.cpp" />
+    <ClCompile Include="MyListView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Lab1_WTL.rc" />
