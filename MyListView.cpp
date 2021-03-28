@@ -45,7 +45,7 @@ void MyListView::FindFile(CString szPath)
 void MyListView::View_List(CString buf, int i,CString path)
 {
 	CString buf1 = buf;
-	//buf1.Delete(buf1.ReverseFind((wchar_t)TEXT(".")), );
+	buf1.Delete(buf1.ReverseFind((wchar_t)TEXT(".")),buf1.Find(TEXT("."),0 ));
 	buf.Delete(buf.FindOneOf(TEXT(".")),buf.GetLength());
 	lvItem.mask = LVIF_IMAGE | LVIF_TEXT;
 	lvItem.state = 0;
