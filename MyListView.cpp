@@ -26,13 +26,13 @@ void MyListView::FindFile(CString szPath)
 		{
 			if (F.IsDirectory() == TRUE && F.IsDots() == FALSE)
 			{
-				View_List(F.GetFileName(), i);
+				View_List(F.GetFileName(), i,F.GetFilePath());
 				i++;
 				FindFile(F.GetFilePath());
 			}
 			else
 			{
-				View_List(F.GetFileName(), i);
+				View_List(F.GetFileName(), i,F.GetFilePath());
 				i++;
 			}
 
@@ -42,8 +42,11 @@ void MyListView::FindFile(CString szPath)
 	}
 }
 
-void MyListView::View_List(CString buf, int i)
+void MyListView::View_List(CString buf, int i,CString path)
 {
+	CString buf1 = buf;
+	//buf1.Delete(buf1.ReverseFind((wchar_t)TEXT(".")), );
+	buf.Delete(buf.FindOneOf(TEXT(".")),buf.GetLength());
 	lvItem.mask = LVIF_IMAGE | LVIF_TEXT;
 	lvItem.state = 0;
 	lvItem.stateMask = 0;
@@ -53,6 +56,8 @@ void MyListView::View_List(CString buf, int i)
 	lvItem.pszText = (LPWSTR)buf.GetString();
 	lvItem.cchTextMax = wcslen(buf);
 	myListView.InsertItem(&lvItem);
+	myListView.SetItemText(i, 1, buf1.GetString());
+	myListView.SetItemText(i, 2, path.GetString());
 }
 
 
@@ -79,17 +84,13 @@ BOOL MyListView::InitListViewImage(int size, CString path)
 			}
 			if (wcscmp(F.GetFileName(), TEXT("..")) == 0)
 			{
-				SHGetFileInfo(TEXT(""), FILE_ATTRIBUTE_DIRECTORY, &lp, sizeof(lp), SHGFI_ICONLOCATION | SHGFI_ICON | SHGFI_SMALLICON);
+				SHGetFileInfo(F.GetFilePath(), FILE_ATTRIBUTE_DIRECTORY, &lp, sizeof(lp), SHGFI_ICONLOCATION | SHGFI_ICON | SHGFI_SMALLICON);
 				ImageList_AddIcon(hSmall, lp.hIcon);
 				DestroyIcon(lp.hIcon);
 			}
 			path.Delete(path.GetLength() - 3, 3);
-			CString FileInfo = path + F.GetFileName();
-			wchar_t buf1[MAX_PATH] = L"C:\\Users\\Огурчик\\Desktop\\";
-			wcscat(buf1, F.GetFileName());
-
-			DWORD num = GetFileAttributes(buf1);
-			SHGetFileInfoW(buf1, num, &lp, sizeof(lp), SHGFI_SYSICONINDEX | SHGFI_ICON | SHGFI_USEFILEATTRIBUTES);
+			DWORD num = GetFileAttributes(F.GetFilePath());
+			SHGetFileInfoW(F.GetFilePath(), num, &lp, sizeof(lp), SHGFI_SYSICONINDEX | SHGFI_ICON | SHGFI_USEFILEATTRIBUTES);
 			ImageList_AddIcon(hSmall, lp.hIcon);
 			DestroyIcon(lp.hIcon);
 		} while (F.FindNextFileW());

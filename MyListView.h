@@ -19,6 +19,6 @@ private:
 public:
 	void Create(HWND m_hWnd);
 	void FindFile(CString szPath);
-	void View_List(CString buf, int i);
+	void View_List(CString buf, int i,CString path);
 	BOOL InitListViewImage(int size, CString path);
 };
