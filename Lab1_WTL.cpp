@@ -15,7 +15,6 @@ extern CAppModule _Module;
 #include "AboutDlg.h"
 CAppModule _Module;
 
-
 class CMainWindow : public CWindowImpl<CMainWindow, CWindow, CFrameWinTraits>
 {
 public:

@@ -1,10 +1,10 @@
 #pragma once
 
 #include <thread>
-
+#include <Commctrl.h>
 #include "resource.h"
 #include "resource2.h"
-#include "MyListView.h"
+#include "Finder.h"
 
 class MyDialogBar:public CDialogImpl<MyDialogBar>
 {
@@ -15,6 +15,7 @@ public:
 	BEGIN_MSG_MAP(MyDialogBar)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_COMMAND,OnCommand)
+		NOTIFY_CODE_HANDLER(NM_CLICK,OnNotify)
 		MESSAGE_HANDLER(WM_CLOSE,OnCloseCmd)
 	END_MSG_MAP()
 
@@ -31,11 +32,11 @@ public:
 			if (FindThread.joinable())
 			{
 				FindThread.detach();
-				FindThread = std::thread((&MyListView::FindFile),this->myListView, parameter);
+				FindThread = std::thread((&Finder::FindFile),this->myListView, parameter);
 			}
 			else
 			{
-				FindThread = std::thread((&MyListView::FindFile), this->myListView, parameter);
+				FindThread = std::thread((&Finder::FindFile), this->myListView, parameter);
 			}
 			return 0;
 		case IDC_SEARCH_TEXT_BAR :
@@ -48,6 +49,12 @@ public:
 		return 0;
 	}
 	
+	LRESULT OnNotify(int, LPNMHDR pnmh, BOOL&)
+	{
+		MessageBoxW(TEXT("I am here"), TEXT("Here"), NULL);
+		return 0;
+	}
+
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
 		myListView.Create(m_hWnd);
@@ -68,6 +75,6 @@ public:
 private:
 	CString FileName;
 	CString FileExtention;
-	MyListView myListView;
+	Finder myListView;
 	std::thread FindThread;
 };
