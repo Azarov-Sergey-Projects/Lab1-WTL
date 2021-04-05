@@ -46,7 +46,7 @@ void Finder::FindFile(CString szPath)
 		} while (F.FindNextFileW());
 		F.Close();
 		//hSmall = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_MASK | ILC_COLOR32, i, 1);
-		//InitListViewImage(i, S);
+		InitListViewImage(i, S);
 		//myListView.SetImageList(hSmall, LVSIL_SMALL);
 	}
 }
@@ -63,16 +63,18 @@ void Finder::GetAttributes(CString path, HIMAGELIST& Icons)
 
 void Finder::View_List(CString name, int i, CString path)
 {
+	CString nameWithoutEx=std::get<0>(Split(name));
+	CString extention= std::get<1>(Split(name));
 	lvItem.mask = LVIF_IMAGE | LVIF_TEXT;
 	lvItem.state = 0;
 	lvItem.stateMask = 0;
 	lvItem.iItem = i;
 	lvItem.iImage = i;
 	lvItem.iSubItem = 0;
-	lvItem.pszText = (LPWSTR)(std::get<0>(Split(name))).GetString();
-	lvItem.cchTextMax = (std::get<0>(Split(name)).GetLength());
+	lvItem.pszText = (LPWSTR)nameWithoutEx.GetString();
+	lvItem.cchTextMax = nameWithoutEx.GetLength();
 	myListView.InsertItem(&lvItem);
-	myListView.SetItemText(i, 1, std::get<1>(Split(name)).GetString());
+	myListView.SetItemText(i, 1, extention.GetString());
 	myListView.SetItemText(i, 2, path.GetString());
 }
 
@@ -115,18 +117,6 @@ BOOL Finder::InitListViewImage(int size, CString path)
 	{
 		do
 		{
-			/*if (wcscmp(F.GetFileName(), TEXT(".")) == 0)
-			{
-				SHGetFileInfo(TEXT(""), FILE_ATTRIBUTE_DEVICE, &lp, sizeof(&lp), SHGFI_ICONLOCATION | SHGFI_ICON | SHGFI_SMALLICON);
-				ImageList_AddIcon(hSmall, lp.hIcon);
-				DestroyIcon(lp.hIcon);
-			}
-			if (wcscmp(F.GetFileName(), TEXT("..")) == 0)
-			{
-				SHGetFileInfo(F.GetFilePath(), FILE_ATTRIBUTE_DIRECTORY, &lp, sizeof(lp), SHGFI_ICONLOCATION | SHGFI_ICON | SHGFI_SMALLICON);
-				ImageList_AddIcon(hSmall, lp.hIcon);
-				DestroyIcon(lp.hIcon);
-			}*/
 			path.Delete(path.GetLength() - 3, 3);
 			DWORD num = GetFileAttributes(F.GetFilePath());
 			SHGetFileInfoW(F.GetFilePath(), num, &lp, sizeof(lp), SHGFI_SYSICONINDEX | SHGFI_ICON | SHGFI_USEFILEATTRIBUTES);
