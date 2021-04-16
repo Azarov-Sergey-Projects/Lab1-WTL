@@ -7,14 +7,14 @@ void Finder::Create(HWND m_hWnd)
 	myListView.InsertColumn(0, TEXT("Название"), LVCFMT_LEFT, 290);
 	myListView.InsertColumn(1, TEXT(".*"), LVCFMT_LEFT, 50);
 	myListView.InsertColumn(2, TEXT("Полный путь"), LVCFMT_LEFT, 290);
-}
 
+}
 void Finder::FindFile(CString szPath)
 {
 	HIMAGELIST hSmall{};
 	CFindFile F;
-	CString S = szPath + TEXT("\\*.*");
-	i = 0;
+	CString S = szPath +TEXT("\\*.*");
+	int i = 0;
 	BOOL bFlag = F.FindFile(S);
 	if (!bFlag)
 	{
@@ -30,11 +30,12 @@ void Finder::FindFile(CString szPath)
 			}
 			else
 			{
-				if (F.IsDirectory() == TRUE && F.IsDots() == FALSE)
+				if (F.IsDirectory() == TRUE)
 				{
 					View_List(F.GetFileName(), i, F.GetFilePath());
 					i++;
 					FindFile(F.GetFilePath());
+					
 				}
 				else
 				{
@@ -42,24 +43,11 @@ void Finder::FindFile(CString szPath)
 					i++;
 				}
 			}
-
 		} while (F.FindNextFileW());
 		F.Close();
-		//hSmall = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_MASK | ILC_COLOR32, i, 1);
-		InitListViewImage(i, S);
-		//myListView.SetImageList(hSmall, LVSIL_SMALL);
+		InitListViewImage(myListView.GetItemCount(), S);
 	}
 }
-
-
-void Finder::GetAttributes(CString path, HIMAGELIST& Icons)
-{
-	SHFILEINFO lp{};
-	DWORD num = GetFileAttributes(path.GetString());
-	SHGetFileInfoW(path.GetString(), num, &lp, sizeof(lp), SHGFI_SYSICONINDEX| SHGFI_ICON | SHGFI_USEFILEATTRIBUTES);
-	ImageList_AddIcon(Icons, lp.hIcon);
-}
-
 
 void Finder::View_List(CString name, int i, CString path)
 {
@@ -106,7 +94,7 @@ BOOL Finder::InitListViewImage(int size, CString path)
 {
 	CFindFile F;
 	HIMAGELIST hSmall;
-	SHFILEINFO lp;
+	SHFILEINFO lp{};
 	hSmall = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_MASK | ILC_COLOR32, size, 1);
 	bool hFind = F.FindFile(path);
 	if (!hFind)
@@ -117,14 +105,17 @@ BOOL Finder::InitListViewImage(int size, CString path)
 	{
 		do
 		{
-			path.Delete(path.GetLength() - 3, 3);
-			DWORD num = GetFileAttributes(F.GetFilePath());
+			if (F.IsDots() == TRUE)
+			{
+				continue;
+			}
+			DWORD num = GetFileAttributesW(F.GetFilePath());
 			SHGetFileInfoW(F.GetFilePath(), num, &lp, sizeof(lp), SHGFI_SYSICONINDEX | SHGFI_ICON | SHGFI_USEFILEATTRIBUTES);
 			ImageList_AddIcon(hSmall, lp.hIcon);
 			DestroyIcon(lp.hIcon);
 		} while (F.FindNextFileW());
 		F.Close();
 	}
-	myListView.SetImageList(hSmall, LVSIL_SMALL);
+	myListView.SetImageList(hSmall, 1);
 	return TRUE;
 }

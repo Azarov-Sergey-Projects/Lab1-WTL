@@ -16,9 +16,16 @@ private:
 	LVITEM lvItem;
 	CListViewCtrl myListView; 
 	CString path;
-	int i;
 public:
-	void GetAttributes(CString path, HIMAGELIST& Icons);
+	static int CALLBACK CompareProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+	{
+		CListViewCtrl* pListCtrl = (CListViewCtrl*)lParamSort;
+		CString    strItem1;
+		pListCtrl->GetItemText(lParam1, 0, strItem1);
+		CString    strItem2;
+		pListCtrl->GetItemText(lParam2, 0, strItem2);
+		return wcscmp(strItem2.GetString(), strItem1.GetString());
+	}
 	void Create(HWND m_hWnd);
 	void FindFile(CString szPath);
 	void View_List(CString buf, int i,CString path);

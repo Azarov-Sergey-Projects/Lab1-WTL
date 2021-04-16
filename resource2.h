@@ -8,9 +8,6 @@
 #define IDC_PICTURE_CONTOL              1004
 #define IDC_SEARCH_TEXT_BAR             1005
 #define IDC_SEARCH_TEXT                 1006
-#define IDC_EXTENTION_TEXT_BAR          1007
-#define IDC_TEXT_EXTENTION              1008
-#define IDC_MY_LIST                     1034
 
 // Next default values for new objects
 // 
